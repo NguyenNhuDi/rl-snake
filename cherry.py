@@ -11,7 +11,7 @@ class Cherry(pygame.sprite.Sprite):
 
         self.color = (215, 15, 242)
 
-        self.image = pygame.Surface((CW, CH))
+        self.image = pygame.Surface((W, H))
         self.image.fill(color=tuple(self.color))
 
         self.mask = pygame.mask.from_surface(self.image)
