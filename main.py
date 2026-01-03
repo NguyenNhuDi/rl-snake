@@ -5,24 +5,51 @@ import pygame
 from CONSTANTS import *
 from cherry import Cherry
 
+class Game:
+    def __init__(self):
+        self.cherries = []
+        self.board = [[None for i in range(NUM_COLS)] for j in range(NUM_ROWS)] 
 
-def spawn_cherry(cherries: List[Cherry]):
-    sX = random.randint(SCREEN_WIDTH / 100, SCREEN_WIDTH - SCREEN_WIDTH / 100)
-    sY = random.randint(SCREEN_HEIGHT / 100, SCREEN_HEIGHT - SCREEN_HEIGHT / 100)
+    def is_full(self):
+        for row in self.board:
+            for item in row:
+                if item is None:
+                    return False
+                
+        return True
 
-    cherries.append(Cherry(sX, sY))
+    def spawn_cherry(self):
+        if self.is_full():
+            return
+        
+        col = random.randint(0, NUM_ROWS - 1)
+        row = random.randint(0, NUM_ROWS - 1)
 
+        while self.board[row][col] is not None:
+            col = random.randint(0, NUM_ROWS - 1)
+            row = random.randint(0, NUM_ROWS - 1)
+
+        sX = CW * col
+        sY = CH * row
+
+        cherry = Cherry(sX, sY)
+
+        self.board[row][col] = cherry 
+        self.cherries.append(cherry)
 
 def main():
+    game = Game()
+
+    game.spawn_cherry()
+    game.spawn_cherry()
+
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption(f'Snake')
 
     gameOn = True
     start_time = pygame.time.get_ticks()
-    curr_time = start_time
-    cherries = []
-
+    prev_time = start_time
     while gameOn:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -30,10 +57,13 @@ def main():
 
         screen.fill((255, 255, 255))
 
-        if len(cherries) < MAX_CHERRY:
-            spawn_cherry(cherries)
+        curr_time = pygame.time.get_ticks()
 
-        for cherry in cherries:
+        if curr_time - prev_time >= SPAWN_CD:
+            prev_time = curr_time        
+            game.spawn_cherry()
+
+        for cherry in game.cherries:
             cherry.draw(screen)
 
         pygame.display.flip()

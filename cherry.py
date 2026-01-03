@@ -9,12 +9,9 @@ class Cherry(pygame.sprite.Sprite):
         self.x = x
         self.y = y
 
-        self.w = SCREEN_WIDTH / 100
-        self.h = SCREEN_HEIGHT / 100
-
         self.color = (215, 15, 242)
 
-        self.image = pygame.Surface((self.w, self.h))
+        self.image = pygame.Surface((CW, CH))
         self.image.fill(color=tuple(self.color))
 
         self.mask = pygame.mask.from_surface(self.image)
