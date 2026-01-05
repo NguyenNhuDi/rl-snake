@@ -18,6 +18,8 @@ class Game:
 
         self.score = 0
 
+        self.font = pygame.font.SysFont(None, 24)
+
     def is_full(self):
         for row in self.board:
             for item in row:
@@ -89,6 +91,9 @@ class Game:
         return False
  
     def draw_game(self, screen):
+
+        text_surface = self.font.render(f'Score: {self.score}', True, (122, 255, 0))
+        screen.blit(text_surface, (0, 0))
         for cherry in self.cherries:
             cherry.draw(screen)
 
@@ -104,12 +109,13 @@ class Game:
         return False
 
 def main():
+    pygame.init()
+
     game = Game()
 
     game.spawn_cherry()
     game.spawn_cherry()
 
-    pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption(f'Snake')
 
