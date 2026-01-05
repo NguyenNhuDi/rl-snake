@@ -4,18 +4,17 @@ from typing import List
 import pygame
 from CONSTANTS import *
 from cherry import Cherry
-from snake import Snake
+from snake import Snake, Body
 
 class Game:
     def __init__(self):
         self.cherries = []
-        self.board = [[None for i in range(NUM_COLS)] for j in range(NUM_ROWS)] 
         self.snake = Snake(
-            (NUM_COLS // 2) * W, 
-            (NUM_ROWS // 2) * H, head=True
+            NUM_COLS // 2, 
+            NUM_ROWS // 2
         )
-
-        self.move_snake = self.snake.move_up
+        self.board = [[None for i in range(NUM_COLS)] for j in range(NUM_ROWS)] 
+        self.board[NUM_ROWS // 2][NUM_COLS // 2] = 'sh'
 
     def is_full(self):
         for row in self.board:
@@ -36,13 +35,55 @@ class Game:
             col = random.randint(0, NUM_ROWS - 1)
             row = random.randint(0, NUM_ROWS - 1)
 
-        sX = W * col
-        sY = H * row
-
-        cherry = Cherry(sX, sY)
+        cherry = Cherry(col, row)
 
         self.board[row][col] = cherry 
         self.cherries.append(cherry)
+
+    def eat_cherry(self):
+        next_x = self.snake.full_body[-1].x
+        next_y = self.snake.full_body[-1].y
+
+        curr_dir = self.snake.full_body[-1].curr_dir
+
+        if curr_dir == 'u':
+            next_y -= 1
+
+            if next_y < 0:
+                next_y = NUM_ROWS - 1
+        elif curr_dir == 'd':
+            next_y += 1
+
+            if next_y >= NUM_ROWS:
+                next_y = 0
+        elif curr_dir == 'l':
+            next_x -= 1
+
+            if next_x < 0:
+                next_x = NUM_COLS - 1
+        else:
+            next_x += 1
+            if next_x >= NUM_COLS:
+                next_x = 0
+
+        found = False 
+        cherry_ate = -1
+        for i, cherry in enumerate(self.cherries):
+            if cherry.x == next_x and \
+               cherry.y == next_y:
+                self.snake.full_body.append(Body(cherry.x, cherry.y, curr_dir))
+                cherry_ate = i
+                found = True
+                break 
+
+        if found:
+            self.cherries.pop(cherry_ate)
+
+            self.spawn_cherry()
+            return True
+            
+        return False
+ 
 
     def draw_game(self, screen):
         for cherry in self.cherries:
@@ -68,20 +109,19 @@ def main():
             if event.type == pygame.QUIT:
                 gameOn = False
 
-
         pressed_keys = pygame.key.get_pressed()
 
         if pressed_keys[pygame.K_q]:
             gameOn = False
 
         if pressed_keys[pygame.K_a] or pressed_keys[pygame.K_LEFT]:
-            game.move_snake = game.snake.move_left
+            game.snake.update_dir('l')
         elif pressed_keys[pygame.K_w] or pressed_keys[pygame.K_UP]:
-            game.move_snake = game.snake.move_up
+            game.snake.update_dir('u')
         elif pressed_keys[pygame.K_d] or pressed_keys[pygame.K_RIGHT]:
-            game.move_snake = game.snake.move_right
+            game.snake.update_dir('r')
         elif pressed_keys[pygame.K_s] or pressed_keys[pygame.K_DOWN]:
-            game.move_snake = game.snake.move_down
+            game.snake.update_dir('d')
 
         screen.fill((255, 255, 255))
 
@@ -89,13 +129,12 @@ def main():
 
         if curr_time - prev_time >= MOVE_CD:
             prev_time = curr_time        
-            game.move_snake()
-
-        if curr_time - prev_time >= 500:
-            prev_time = curr_time        
-            game.snake.move_up()
+            if not game.eat_cherry():
+                game.snake.move(game.board)
 
         game.draw_game(screen)
+
+
 
         pygame.display.flip()
 

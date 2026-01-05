@@ -15,7 +15,7 @@ class Cherry(pygame.sprite.Sprite):
         self.image.fill(color=tuple(self.color))
 
         self.mask = pygame.mask.from_surface(self.image)
-        self.rect = self.image.get_rect(topleft=(self.x, self.y))
+        self.rect = self.image.get_rect(topleft=(self.x * W, self.y * H))
 
     def draw(self, screen: pygame.surface.Surface) -> None:
         screen.blit(self.image, self.rect)
