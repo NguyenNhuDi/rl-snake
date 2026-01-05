@@ -16,6 +16,8 @@ class Game:
         self.board = [[None for i in range(NUM_COLS)] for j in range(NUM_ROWS)] 
         self.board[NUM_ROWS // 2][NUM_COLS // 2] = 'sh'
 
+        self.score = 0
+
     def is_full(self):
         for row in self.board:
             for item in row:
@@ -23,7 +25,7 @@ class Game:
                     return False
                 
         return True
-
+    
     def spawn_cherry(self):
         if self.is_full():
             return
@@ -80,16 +82,26 @@ class Game:
             self.cherries.pop(cherry_ate)
 
             self.spawn_cherry()
+
+            self.score += 1
             return True
             
         return False
  
-
     def draw_game(self, screen):
         for cherry in self.cherries:
             cherry.draw(screen)
 
         self.snake.draw(screen)
+
+    def game_over(self):
+        head_x = self.snake.full_body[-1].x
+        head_y = self.snake.full_body[-1].y
+
+        for i in range(len(self.snake.full_body) - 1):
+            if self.snake.full_body[i].x == head_x and self.snake.full_body[i].y == head_y:
+                return True 
+        return False
 
 def main():
     game = Game()
@@ -102,6 +114,8 @@ def main():
     pygame.display.set_caption(f'Snake')
 
     gameOn = True
+    gameLost = True
+
     start_time = pygame.time.get_ticks()
     prev_time = start_time
     while gameOn:
@@ -128,18 +142,23 @@ def main():
         curr_time = pygame.time.get_ticks()
 
         if curr_time - prev_time >= MOVE_CD:
+
+            if game.game_over():
+                gameOn = False
+                break
+
             prev_time = curr_time        
             if not game.eat_cherry():
                 game.snake.move(game.board)
 
         game.draw_game(screen)
 
-
-
         pygame.display.flip()
 
     pygame.quit()
 
+    if gameLost:
+        print(f'You lost! Final Score: {game.score}')
 
 if __name__ == '__main__':
     main()
